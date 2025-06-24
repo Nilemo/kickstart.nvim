@@ -188,6 +188,7 @@ require('lazy').setup({
     -- Optional dependencies
     dependencies = { 'echasnovski/mini.icons' },
   },
+
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
   -- This is often very useful to both group configuration, as well as handle
@@ -593,12 +594,23 @@ require('lazy').setup({
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
+        -- List of LSP servers to ensure are installed
+        ensure_installed = {
+          'angularls', -- Angular Language Server
+          -- 'typescript-language-server', -- TypeScript Language Server
+          'html', -- HTML Language Server
+          'cssls', -- CSS Language Server
+          -- Add other LSP servers you need
+        },
+
+        -- Automatically install LSP servers
+        automatic_installation = true,
+
+        -- Handlers for LSP servers
         handlers = {
           function(server_name)
             local server = servers[server_name] or {}
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for tsserver)
+            -- Merge capabilities with server-specific configurations
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
             require('lspconfig')[server_name].setup(server)
           end,
@@ -606,7 +618,20 @@ require('lazy').setup({
       }
     end,
   },
-
+  {
+    'folke/flash.nvim',
+    event = 'VeryLazy',
+    ---@type Flash.Config
+    opts = {},
+  -- stylua: ignore
+  keys = {
+    { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+    { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+    { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
+    { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+    { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
+  },
+  },
   { -- Autoformat
     'stevearc/conform.nvim',
     lazy = false,
